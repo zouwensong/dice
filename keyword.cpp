@@ -1,9 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<string>
-//#include<vector>
 using namespace std;
-
 struct key {
 	string word;
 	int count;
@@ -42,49 +40,53 @@ struct key {
 	"while", 0
 };
 
-void KeySearch(string str) {
+void KeySearch(string str) {//记得要试一试折半查找 
 	int n;
 	for (int i = 0; i < 32; i++) {
-		if ((n = str.find(keytab[i].word)) != string::npos) {
+		if(keytab[i].word == str){
 			keytab[i].count++;
-			if (keytab[i].word == "double") {
-				keytab[7].count--;
-			}
 		}
 	}
 }
-
+void CutWord(string str) {
+	string newword;
+	int i=0;
+	while (!isalpha(str[i])) {
+		i++;
+	}
+	for ( ; i < str.size(); i++) {
+		if (!isalpha(str[i]) && str[i]!='_' && !isalnum(str[i])){//不是字母、数字、下划线时
+			if (newword.size()>=2){
+				cout<<"__________  "<<newword<<"  _______"<<endl;
+				KeySearch(newword);
+			} 
+			newword = "";
+		}
+		else{
+			cout<<" ~"<<str[i]<<"~ "<<endl;
+			newword += str[i];
+		}
+	}
+	if (newword != "") {
+		if (newword.size()>=2){
+			cout<<"__________  "<<newword<<"  _______"<<endl;
+			KeySearch(newword);
+		}
+	}
+}
 void SearchFile(const char *file, int level) {
 	ifstream infile;
 	infile.open(file, ios::in);
-	//instream infile(file);
-	if(!infile.is_open()) {
+	if (!infile.is_open()) {
 		cout << "error! TAT" << endl;
 	} else {
-		/*char c;
-		while((c=infile.get()) != EOF){
-			cout << c <<endl; 
-		}//一个个字符读取 
-		infile.close();
-		cout<<"HAPPY to Here.";*/
 		string str;
-		while(infile >> str) {
-			KeySearch(str);
-			cout << str << endl; 
-		}//空格回车区分 
+		while (infile >> str) {
+			cout << str << endl;
+			CutWord(str);
+		}//以空格回车区分读取 
 		infile.close();
 	}
-	/*
-	string str; 
-	while(getline(infile,str)) {
-		cout << str << endl;
-	}//以行读取，字符串
-	
-	char str[100];
-	while(infile.getline(str, 100)) {
-        cout << str << endl; 	
-    }//字符数组 
-	*/
 }
 
 void Print() {
