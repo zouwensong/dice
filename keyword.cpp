@@ -41,7 +41,12 @@ struct key {
 };
 // case 2  switch 25
 int obj[100];
-int KeySearch(string str) {//记得要试一试折半查找，返回值下标 
+void level2(int index) {//实现switch与case的统计 
+	if (keytab[25].count > 0 && index == 2) {//存在switch时，有case找到即加1 
+		obj[keytab[25].count-1]++;
+	}
+}
+int KeySearch(string str) {//记得要试一试折半查找，返回值为下标 
 	int index = -1;
 	for (int i = 0; i < 32; i++) {
 		if(keytab[i].word == str){
@@ -52,7 +57,7 @@ int KeySearch(string str) {//记得要试一试折半查找，返回值下标
 	}
 	return index;
 }
-void CutWord(string str) {
+void CutWord(string str,int level) {
 	string newword;
 	int i = 0,index;
 	while (!isalpha(str[i])) {//使word以英文开头 
@@ -63,9 +68,7 @@ void CutWord(string str) {
 			if (newword.size()>=2){//word长度大等2，原因关键字最短为do，长度2 
 				//cout<<"__________ "<<newword<<" __________"<<endl;
 				index = KeySearch(newword);
-				if (keytab[25].count > 0 && index == 2) {//存在switch时，有case找到即加1 
-					obj[keytab[25].count-1]++;
-				}
+				if(level == 2) level2(index);
 			} 
 			newword = "";
 		}
@@ -78,9 +81,7 @@ void CutWord(string str) {
 		if (newword.size()>=2){
 			//cout<<"__________  "<<newword<<"  _______"<<endl;
 			index = KeySearch(newword);
-			if (keytab[25].count > 0 && index == 2){
-				obj[keytab[25].count-1]++;
-	    	}
+			if(level == 2) level2(index);
 		}
 	}
 }
@@ -92,39 +93,39 @@ void SearchFile(const char *file, int level) {
 		string str;
 		while (fin >> str) { //以空格回车区分读取
 			//cout << str << endl; // KeySearch(str) no!
-			CutWord(str); //更细致的切割各小块 
+			CutWord(str,level); //更细致的切割各小块 
 		} 
 		fin.close();
 	}
 }
-void Print() {
+void Print(int level) {
 	int sum = 0;
 	for (int i = 0; i < 32; i++){ //统计总数 
-		if(keytab[i].count != 0){
-			if (i != 2) {
+		if(keytab[i].count != 0 && level == 1){
 				cout << keytab[i].word << " num: " << keytab[i].count << endl;
-			} else {
-				cout << keytab[i].word << " num: ";
-				for(int j=0; j < keytab[25].count; j++){
-					cout << obj[j] << " ";
-				}
-				cout << endl;
-			} 
 		}
 		sum += keytab[i].count;
 	}
 	cout << "total num：" << sum << endl;
-	
+	if(level == 2){
+		cout << keytab[25].word << " num: " << keytab[25].count << endl;
+		cout << keytab[2].word << " num: ";
+		for(int j=0; j < keytab[25].count; j++){
+			cout << obj[j] << " ";
+		}	
+		cout << endl;
+	}
 }
 
 int main() {
 	string file_path;
-	int level=1;
-	cout<<"欢迎来到代码关键词提取"<<endl<<"完成等级：2"<<endl<<"(注：等级从低到高为1-4)"<<endl;
+	int level;
+	cout<<"欢迎来到代码关键词提取"<<endl;
 	cout<<"请输入文件名："<<endl;
 	cin>>file_path;
-	//cin>>level;
+	cout<<"请输入完成等级：(注：等级从低到高为1-4)"<< endl;
+	cin>>level;
 	SearchFile(file_path.c_str(), level); //file_path.c_str(): string to const char*
-	Print();
+	Print(level);
 	return 0;
 }
