@@ -2,13 +2,13 @@
 #include<fstream>
 #include<string>
 using namespace std;
-struct key {
+struct key { 
 	string word;
 	int count;
 } keytab[] = {
 	"auto", 0,
 	"break", 0,
-	"case", 0,
+	"case", 0, //2
 	"char", 0,
 	"const", 0,
 	"continue", 0,
@@ -31,7 +31,7 @@ struct key {
 	"sizeof", 0,
 	"static", 0,
 	"struct", 0,
-	"switch", 0,
+	"switch", 0,//25
 	"typedef", 0,
 	"union", 0,
 	"unsigned", 0,
@@ -39,74 +39,92 @@ struct key {
 	"volatile", 0,
 	"while", 0
 };
-
-void KeySearch(string str) {//记得要试一试折半查找 
-	int n;
+// case 2  switch 25
+int obj[100];
+int KeySearch(string str) {//记得要试一试折半查找，返回值下标 
+	int index = -1;
 	for (int i = 0; i < 32; i++) {
 		if(keytab[i].word == str){
 			keytab[i].count++;
+			index = i;
+			break;
 		}
 	}
+	return index;
 }
 void CutWord(string str) {
 	string newword;
-	int i=0;
-	while (!isalpha(str[i])) {
+	int i = 0,index;
+	while (!isalpha(str[i])) {//使word以英文开头 
 		i++;
 	}
 	for ( ; i < str.size(); i++) {
 		if (!isalpha(str[i]) && str[i]!='_' && !isalnum(str[i])){//不是字母、数字、下划线时
-			if (newword.size()>=2){
-				cout<<"__________  "<<newword<<"  _______"<<endl;
-				KeySearch(newword);
+			if (newword.size()>=2){//word长度大等2，原因关键字最短为do，长度2 
+				//cout<<"__________ "<<newword<<" __________"<<endl;
+				index = KeySearch(newword);
+				if (keytab[25].count > 0 && index == 2) {//存在switch时，有case找到即加1 
+					obj[keytab[25].count-1]++;
+				}
 			} 
 			newword = "";
 		}
 		else{
-			cout<<" ~"<<str[i]<<"~ "<<endl;
+			//cout<<"~"<<str[i]<<"~"<<endl;
 			newword += str[i];
 		}
 	}
-	if (newword != "") {
+	if (newword != "") {//结尾时注意字符串是否为空 
 		if (newword.size()>=2){
-			cout<<"__________  "<<newword<<"  _______"<<endl;
-			KeySearch(newword);
+			//cout<<"__________  "<<newword<<"  _______"<<endl;
+			index = KeySearch(newword);
+			if (keytab[25].count > 0 && index == 2){
+				obj[keytab[25].count-1]++;
+	    	}
 		}
 	}
 }
 void SearchFile(const char *file, int level) {
-	ifstream infile;
-	infile.open(file, ios::in);
-	if (!infile.is_open()) {
-		cout << "error! TAT" << endl;
+	ifstream fin(file); //infile.open(file, ios::in);
+	if (!fin.is_open()) {
+		cout << "error!" << endl;
 	} else {
 		string str;
-		while (infile >> str) {
-			cout << str << endl;
-			CutWord(str);
-		}//以空格回车区分读取 
-		infile.close();
+		while (fin >> str) { //以空格回车区分读取
+			//cout << str << endl; // KeySearch(str) no!
+			CutWord(str); //更细致的切割各小块 
+		} 
+		fin.close();
 	}
 }
-
 void Print() {
 	int sum = 0;
-	for (int i = 0; i < 32; i++){
-		if(keytab[i].count != 0)
-		cout << keytab[i].word << " num: " << keytab[i].count << endl;
+	for (int i = 0; i < 32; i++){ //统计总数 
+		if(keytab[i].count != 0){
+			if (i != 2) {
+				cout << keytab[i].word << " num: " << keytab[i].count << endl;
+			} else {
+				cout << keytab[i].word << " num: ";
+				for(int j=0; j < keytab[25].count; j++){
+					cout << obj[j] << " ";
+				}
+				cout << endl;
+			} 
+		}
 		sum += keytab[i].count;
 	}
 	cout << "total num：" << sum << endl;
+	
 }
 
 int main() {
 	string file_path;
-	int level;
-	cout<<"欢迎来到代码关键词提取 QAQ"<<endl<<"请输入文件名："<<endl;
+	int level=1;
+	cout<<"欢迎来到代码关键词提取"<<endl<<"完成等级：2"<<endl<<"(注：等级从低到高为1-4)"<<endl;
+	cout<<"请输入文件名："<<endl;
 	cin>>file_path;
-	cout<<"请输入完成等级："<<endl<<"(注：等级从低到高为1-4)"<<endl; 
-	cin>>level;
-	SearchFile(file_path.c_str(), level); //c_str(): string to const char*
+	//cin>>level;
+	SearchFile(file_path.c_str(), level); //file_path.c_str(): string to const char*
 	Print();
 	return 0;
 }
