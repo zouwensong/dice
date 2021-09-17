@@ -1,10 +1,10 @@
 #include<iostream>
-#include<fstream>
 #include<string>
+#include<cstdio>
 using namespace std;
 struct key { 
-	string word;
-	int count;
+  string word;
+  int count;
 } keytab[] = {
 	"auto", 0,
 	"break", 0,
@@ -39,14 +39,31 @@ struct key {
 	"volatile", 0,
 	"while", 0
 };
-// case 2  switch 25
-int obj[100];
-void level2(int index) {//实现switch与case的统计 
-	if (keytab[25].count > 0 && index == 2) {//存在switch时，有case找到即加1 
-		obj[keytab[25].count-1]++;
-	}
+void Print(int level);
+void FileSearch(const char *file, int level);
+int KeySearch(string str);
+int main(){
+	string file_path;
+	int level;
+	cout << "欢迎来到C语言代码关键字统计" << endl;
+	cout << "请输入文件名与完成等级：（二者以空格分割）" << endl;
+	cin >> file_path;
+	cin >> level;
+	FileSearch(file_path.c_str(), level);
+	Print(level);
+	return 0; 
 }
-int KeySearch(string str) {//记得要试一试折半查找，返回值为下标 
+void Print(int level){
+	int sum = 0;
+	for (int i = 0; i < 32; i++) {
+		if(keytab[i].count != 0){
+			cout << keytab[i].word << " num: " << keytab[i].count << endl;
+		}
+		sum += keytab[i].count;
+	}
+	cout << "total num: " << sum << endl;
+} 
+int KeySearch(string str){
 	int index = -1;
 	for (int i = 0; i < 32; i++) {
 		if(keytab[i].word == str){
@@ -57,75 +74,61 @@ int KeySearch(string str) {//记得要试一试折半查找，返回值为下标
 	}
 	return index;
 }
-void CutWord(string str,int level) {
-	string newword;
-	int i = 0,index;
-	while (!isalpha(str[i])) {//使word以英文开头 
-		i++;
+void FileSearch(const char *file, int level) {
+	int index;
+	FILE *fin;
+	fin = fopen(file,"r"); 
+	if (fin == NULL) {
+		cout << "error!" << endl;
 	}
-	for ( ; i < str.size(); i++) {
-		if (!isalpha(str[i]) && str[i]!='_' && !isalnum(str[i])){//不是字母、数字、下划线时
-			if (newword.size()>=2){//word长度大等2，原因关键字最短为do，长度2 
-				//cout<<"__________ "<<newword<<" __________"<<endl;
-				index = KeySearch(newword);
-				if(level == 2) level2(index);
-			} 
-			newword = "";
+  char c;
+  string str;
+  c = fgetc(fin);
+	while (c != EOF) { //以单个字符读取,忽略空格回车 
+	  //cout << c << endl;
+	  if (c == '#') { //处理 头文件，快进 ——宏定义呢？？？ 
+	  	while(c!='>'){
+	  		c = fgetc(fin);
+	  		if(c == '\n') break;
+			}
+		}
+//		else if (c == ' ') { //处理 空格
+//		  ;
+//  	}
+//		else if (c == '\n') { //处理 回车 
+//		  ;
+//		}
+		else if (c == '\'' ) {//处理 单引号，快进 
+			while(c!='\'')
+			  c = fgetc(fin); 
+		}
+		else if (c == '"') {//处理双引号，快进 
+			while(c!='"')
+			 c = fgetc(fin);
+		}
+		else if (isalpha(c) || c=='_' || isalnum(c)) {//处理单词,这可以数字开头 
+			string str;
+			while(isalpha(c) && c=='_' || isalnum(c)){
+				str += c;
+				c = fgetc(fin);
+			}
+			//cout<<"THE WORD:"<<str<<endl;
+			index = KeySearch(str);
+		}
+		else if (c == '/') { //处理 注释行//和/* */ 
+			c = fgetc(fin);
+			if(c == '/'){
+				while(c != '\n')
+				  c = fgetc(fin);
+			}
+			if(c == '*'){
+				while(c != '/')
+				  c = fgetc(fin);
+			}
 		}
 		else{
-			//cout<<"~"<<str[i]<<"~"<<endl;
-			newword += str[i];
+			c = fgetc(fin);
 		}
 	}
-	if (newword != "") {//结尾时注意字符串是否为空 
-		if (newword.size()>=2){
-			//cout<<"__________  "<<newword<<"  _______"<<endl;
-			index = KeySearch(newword);
-			if(level == 2) level2(index);
-		}
-	}
-}
-void SearchFile(const char *file, int level) {
-	ifstream fin(file); //infile.open(file, ios::in);
-	if (!fin.is_open()) {
-		cout << "error!" << endl;
-	} else {
-		string str;
-		while (fin >> str) { //以空格回车区分读取
-			//cout << str << endl; // KeySearch(str) no!
-			CutWord(str,level); //更细致的切割各小块 
-		} 
-		fin.close();
-	}
-}
-void Print(int level) {
-	int sum = 0;
-	for (int i = 0; i < 32; i++){ //统计总数 
-		if(keytab[i].count != 0 && level == 1){
-				cout << keytab[i].word << " num: " << keytab[i].count << endl;
-		}
-		sum += keytab[i].count;
-	}
-	cout << "total num：" << sum << endl;
-	if(level == 2){
-		cout << keytab[25].word << " num: " << keytab[25].count << endl;
-		cout << keytab[2].word << " num: ";
-		for(int j=0; j < keytab[25].count; j++){
-			cout << obj[j] << " ";
-		}	
-		cout << endl;
-	}
-}
-
-int main() {
-	string file_path;
-	int level;
-	cout<<"欢迎来到代码关键词提取"<<endl;
-	cout<<"请输入文件名："<<endl;
-	cin>>file_path;
-	cout<<"请输入完成等级：(注：等级从低到高为1-4)"<< endl;
-	cin>>level;
-	SearchFile(file_path.c_str(), level); //file_path.c_str(): string to const char*
-	Print(level);
-	return 0;
+	fclose(fin);
 }
