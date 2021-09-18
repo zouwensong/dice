@@ -39,6 +39,7 @@ struct key {
 	"volatile", 0,
 	"while", 0
 };
+int casenum[100]={0};
 void Print(int level);
 void FileSearch(const char *file, int level);
 int KeySearch(string str);
@@ -46,9 +47,8 @@ int main(){
 	string file_path;
 	int level;
 	cout << "欢迎来到C语言代码关键字统计" << endl;
-	cout << "请输入文件名与完成等级：（二者以空格分割）" << endl;
-	cin >> file_path;
-	cin >> level;
+	cout << "请输入文件名与完成等级:" << endl;
+	cin >> file_path >> level;
 	FileSearch(file_path.c_str(), level);
 	Print(level);
 	return 0; 
@@ -57,12 +57,20 @@ void Print(int level){
 	int sum = 0;
 	for (int i = 0; i < 32; i++) {
 		if(keytab[i].count != 0){
-			cout << keytab[i].word << " num: " << keytab[i].count << endl;
+			if (level == 1) {
+				cout << keytab[i].word << " num: " << keytab[i].count << endl;
+			}
 		}
 		sum += keytab[i].count;
 	}
 	cout << "total num: " << sum << endl;
-} 
+		if (level == 2) {
+		  cout << "switch num: " << keytab[25].count << endl;
+			cout << "case num: ";
+		  for(int i = 0; i < keytab[25].count; i++)
+			cout << casenum[i] << " " ;
+		}
+}
 int KeySearch(string str){
 	int index = -1;
 	for (int i = 0; i < 32; i++) {
@@ -98,13 +106,19 @@ void FileSearch(const char *file, int level) {
 //		else if (c == '\n') { //处理 回车 
 //		  ;
 //		}
-		else if (c == '\'' ) {//处理 单引号，快进 
-			while(c!='\'')
-			  c = fgetc(fin); 
+		else if (c == '\'' ) {//处理 单引号，快进
+			c = fgetc(fin);
+			while(c!= '\''){
+				c = fgetc(fin);
+			}
+			c = fgetc(fin); 
 		}
 		else if (c == '"') {//处理双引号，快进 
-			while(c!='"')
-			 c = fgetc(fin);
+		  c = fgetc(fin);
+			while(c!='"'){
+				c = fgetc(fin);
+			}
+			c = fgetc(fin);
 		}
 		else if (isalpha(c) || c=='_' || isalnum(c)) {//处理单词,这可以数字开头 
 			string str;
@@ -114,6 +128,11 @@ void FileSearch(const char *file, int level) {
 			}
 			//cout<<"THE WORD:"<<str<<endl;
 			index = KeySearch(str);
+			if (level == 2 ) {
+				if (keytab[25].count!=0) {
+					if(index == 2)casenum[keytab[25].count-1]++;
+				}
+			}
 		}
 		else if (c == '/') { //处理 注释行//和/* */ 
 			c = fgetc(fin);
