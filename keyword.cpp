@@ -89,15 +89,20 @@ void Print(int level){
 	cout << "total num: " << sum << endl;
 	if (level >= 2) {
 		  cout << "switch num: " << keytab[25].count << endl << "case num: ";
-		  for(int i = 0; i < keytab[25].count; i++)
-			cout << casenum[i] << " " ;
-			cout << endl;
+		  if(keytab[25].count == 0) {
+		  	cout << "0" << endl;
+			}
+			else{
+				for(int i = 0; i < keytab[25].count; i++)
+				cout << casenum[i] << " " ;
+				cout << endl;
+			}
 			if(level >= 3){
-				cout <<"if else num: ";
+				cout <<"if-else num: ";
 				cout << ie_count << endl;
 			}
 			if(level >= 4){
-				cout<<"if else-if else num: ";
+				cout<<"if-elseif-else num: ";
 				cout<<iee_count<<endl;
 			}
 	}
@@ -152,20 +157,23 @@ void FileSearch(const char *file, int level) {
 				str += c;
 				c = fgetc(fin);
 			}
-			//cout<<"THE WORD:"<<str<<endl;
 			index = KeySearch(str);
+			//cout<<"THE WORD:"<<index<<" "<<str<<endl;
 			if (level >= 2) { //进阶、拔高和终极要求 
-				if (keytab[25].count!=0) {
-					if(index == 2)casenum[keytab[25].count-1]++;
+				if (keytab[25].count != 0) {
+					if(index == 2) casenum[keytab[25].count-1]++;
 				}
 				if (index == 15){//匹配到if-1
 					s.push(1);
 				}
 				if (index == 9) {//准备检查匹配到哪个 else-2;else if-3
 				//此时c已经不是字母、数字、下划线了呢，很可能是空格哦
-				  int flag=0; 
-					if((c=fgetc(fin))=='i'){
-						if((c=fgetc(fin))=='f'){ //匹配到else if 
+				  int flag=0;
+				  //cout<<"THAT:"<<c;
+				  while(c==' ' || c=='\n' || c=='\t') c=fgetc(fin);
+				  //cout<<"AND:"<<c;
+					if(c=='i'){
+						if((c=fgetc(fin))=='f'){ //匹配到else if
 							if(!s.empty()&&(s.top()!=3)) s.push(3);
 							flag=1;
 							keytab[15].count++;
